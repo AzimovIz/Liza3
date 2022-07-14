@@ -9,7 +9,11 @@ import random
 import threading
 import pyshorteners
 from webbot import Browser
-import selenium
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 threading.TIMEOUT_MAX = 60 * 10.0
 
@@ -83,20 +87,24 @@ def pars(log=False, url='http://anime.reactor.cc/new'):
 def web_dw(link, log=False):
     web = Browser(showWindow=False)
 
-    web.go_to('http://joyreactor.cc/login')
-    web.type('diadern', id='signin_username')
-    web.type('n9z2s7NDkXq348H', id='signin_password')  # specific selection
-    time.sleep(5)
-    web.click('Войти')  # you are logged in ^_^
-    time.sleep(5)
-    web.new_tab(link)
-    #htm = web.find_elements()
-    #print(tabs)
-    web.switch_to_tab(2)
-    web.new_tab(link)
-    web.switch_to_tab(3)
-    htm = web.get_page_source()
-    #print(htm)
+    options = webdriver.FirefoxOptions()
+    options.add_argument("-profile")
+    options.add_argument("bot_profile")
+    firefox_capabilities = DesiredCapabilities.FIREFOX
+    firefox_capabilities['marionette'] = True
+
+    options.headless = True
+
+    driver = webdriver.Firefox(capabilities=firefox_capabilities, options=options)
+
+    driver.get(link)
+    time.sleep(4)
+
+    htm = driver.page_source
+
+    driver.close()
+    del driver
+
     soup = BeautifulSoup(htm, features="lxml")
     item = soup.find_all('a', {'class': 'prettyPhotoLink'})
     item2 = soup.find_all('a', {'class': 'video_gif_source'})
@@ -111,8 +119,37 @@ def web_dw(link, log=False):
         #r = requests.get(i, allow_redirects=True)
         thread = threading.Thread(target=dw, args=[i, log])
         thread.start()
-    web.driver.quit()
-    del web
+
+    # web.go_to('http://joyreactor.cc/login')
+    # web.type('diadern', id='signin_username')
+    # web.type('n9z2s7NDkXq348H', id='signin_password')  # specific selection
+    # time.sleep(5)
+    # web.click('Войти')  # you are logged in ^_^
+    # time.sleep(5)
+    # web.new_tab(link)
+    # #htm = web.find_elements()
+    # #print(tabs)
+    # web.switch_to_tab(2)
+    # web.new_tab(link)
+    # web.switch_to_tab(3)
+    # htm = web.get_page_source()
+    # #print(htm)
+    # soup = BeautifulSoup(htm, features="lxml")
+    # item = soup.find_all('a', {'class': 'prettyPhotoLink'})
+    # item2 = soup.find_all('a', {'class': 'video_gif_source'})
+    # item[len(item):] = item2
+    # #print(item)
+    # links = []
+    # for i in item:
+    #     lnk = str(i.get('href')).replace('full/', '')
+    #     links.append(lnk)
+    # for i in links:
+    #     #s = str(i[(i.rfind('-') + 1):])
+    #     #r = requests.get(i, allow_redirects=True)
+    #     thread = threading.Thread(target=dw, args=[i, log])
+    #     thread.start()
+    # web.driver.quit()
+    # del web
 
 
 def dw(i, log=False):
