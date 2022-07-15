@@ -102,9 +102,6 @@ def web_dw(link, log=False):
 
     htm = driver.page_source
 
-    driver.close()
-    del driver
-
     soup = BeautifulSoup(htm, features="lxml")
     item = soup.find_all('a', {'class': 'prettyPhotoLink'})
     item2 = soup.find_all('a', {'class': 'video_gif_source'})
@@ -120,6 +117,8 @@ def web_dw(link, log=False):
         thread = threading.Thread(target=dw, args=[i, log])
         thread.start()
 
+    driver.close()
+    del driver
     # web.go_to('http://joyreactor.cc/login')
     # web.type('diadern', id='signin_username')
     # web.type('n9z2s7NDkXq348H', id='signin_password')  # specific selection
@@ -155,6 +154,8 @@ def web_dw(link, log=False):
 def dw(i, log=False):
     img_c = sqlite3.connect(database)
     cursor_i = img_c.cursor()
+    if not 'http' in i:
+        i = i.replace('//', 'http://')
     try:
         cursor_i.execute(f'INSERT INTO pic VALUES (?, ?)', (i, 'False'))
         img_c.commit()
